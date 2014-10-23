@@ -56,6 +56,7 @@ module.exports = function(image, opts) {
         }
 
         if (persist) dopts.volumes['/root'] = '/tmp/'+id        
+        if (opts.trusted) dopts.volumes['/var/run/docker.sock'] = '/var/run/docker.sock'
 
         pump(stream, docker(image, dopts), stream, function(err) {
           server.emit('kill', container)

@@ -19,6 +19,9 @@
   "bin": {
     "docker-browser-server": "./bin.js"
   },
+  "scripts": {
+    "start": "node bin.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/mafintosh/docker-browser-server.git"
