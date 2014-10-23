@@ -54,7 +54,15 @@ If you listen on port 80 inside the container all requests going to `$HOST` will
 ## Adventure time
 
 Checkout [maxogden/adventure-time](https://github.com/maxogden/adventure-time) for a complete client environment
-that integrates with docker-browser-server
+that integrates with docker-browser-server.
+
+The easiest way to create your own workshop is creating a new Dockerfile and inheriting from the [mafintosh/docker-browser-adventure](https://github.com/mafintosh/docker-adventure-time) image.
+This will setup expose-fs and install node among other things
+
+```
+FROM mafintosh/docker-adventure-time
+RUN npm install -g your-workshop-stuff
+```
 
 ## Programmatic usage
 
