@@ -1,0 +1,32 @@
+{
+  "name": "docker-browser-server",
+  "version": "0.0.0",
+  "description": "Spawn and expose docker containers over http and websockets",
+  "main": "index.js",
+  "dependencies": {
+    "cors": "^2.4.2",
+    "docker-browser-console": "^4.3.0",
+    "freeport": "^1.0.3",
+    "minimist": "^1.1.0",
+    "pump": "^1.0.0",
+    "request": "^2.45.0",
+    "root": "^2.0.0",
+    "send": "^0.10.1",
+    "websocket-stream": "^1.0.2",
+    "ws": "^0.4.32"
+  },
+  "devDependencies": {},
+  "bin": {
+    "docker-browser-server": "./bin.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mafintosh/docker-browser-server.git"
+  },
+  "author": "Mathias Buus (@mafintosh)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mafintosh/docker-browser-server/issues"
+  },
+  "homepage": "https://github.com/mafintosh/docker-browser-server"
+}
