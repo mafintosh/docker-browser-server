@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "cors": "^2.4.2",
-    "docker-browser-console": "^4.3.0",
+    "docker-browser-console": "^4.3.1",
     "freeport": "^1.0.3",
     "minimist": "^1.1.0",
     "pump": "^1.0.0",
