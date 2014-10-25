@@ -41,6 +41,11 @@ module.exports = function(image, opts) {
 
         server.emit('spawn', container)
 
+        var ports = {}
+
+        ports[httpPort] = 80
+        ports[filesPort] = 8441
+
         var dopts = {
           tty: opts.tty === undefined ? true : opts.tty,
           env: {
@@ -48,14 +53,11 @@ module.exports = function(image, opts) {
             HOST: container.host,
             PORT: 80
           },
-          ports: {
-            80: httpPort,
-            8441: filesPort
-          },
+          ports: ports,
           volumes: opts.volumes || {} 
         }
 
-        if (persist) dopts.volumes['/root'] = '/tmp/'+id        
+        if (persist) dopts.volumes['/tmp/'+id] = '/root'
         if (opts.trusted) dopts.volumes['/var/run/docker.sock'] = '/var/run/docker.sock'
 
         pump(stream, docker(image, dopts), stream, function(err) {
