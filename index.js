@@ -11,6 +11,7 @@ var send = require('send')
 var path = require('path')
 var pump = require('pump')
 var cors = require('cors')
+var net = require('net')
 
 module.exports = function(image, opts) {
   if (!opts) opts = {}
@@ -22,47 +23,66 @@ module.exports = function(image, opts) {
   var containers = {}
 
   wss.on('connection', function(connection) {
-    var url = connection.upgradeReq.url.slice(1)
+    var req = connection.upgradeReq
+    var url = req.url.slice(1)
     var persist = opts.persist && !!url
     var id = url || Math.random().toString(36).slice(2)
-    var subdomain = id+'.c.'+connection.upgradeReq.headers.host
     var stream = websocket(connection)
+
+    var startProxy = function(httpPort, cb) {
+      if (!opts.offline) return cb(null, id+'.c.'+req.headers.host)
+
+      var proxy = net.createServer(function(socket) {
+        pump(socket, net.connect(httpPort, DOCKER_HOST), socket)
+      })
+
+      proxy.once('error', cb)
+      proxy.listen(0, function() {
+        var port = proxy.address().port
+        cb(null, req.headers.host.split(':')[0]+':'+port, proxy)
+      })
+    }
+
 
     freeport(function(err, filesPort) {
       if (err) return connection.destroy()
       freeport(function(err, httpPort) {
         if (err) return connection.destroy()
+        startProxy(httpPort, function(err, subdomain, proxy) {
+          if (err) return connection.destroy()
 
-        var container = containers[id] = {
-          id: id,
-          host: 'http://'+subdomain,
-          ports: {http:httpPort, fs:filesPort}
-        }
+          var container = containers[id] = {
+            id: id,
+            host: 'http://'+subdomain,
+            ports: {http:httpPort, fs:filesPort}
+          }
 
-        server.emit('spawn', container)
+          server.emit('spawn', container)
 
-        var ports = {}
+          var ports = {}
 
-        ports[httpPort] = 80
-        ports[filesPort] = 8441
+          ports[httpPort] = 80
+          ports[filesPort] = 8441
 
-        var dopts = {
-          tty: opts.tty === undefined ? true : opts.tty,
-          env: {
-            CONTAINER_ID: container.id,
-            HOST: container.host,
-            PORT: 80
-          },
-          ports: ports,
-          volumes: opts.volumes || {} 
-        }
+          var dopts = {
+            tty: opts.tty === undefined ? true : opts.tty,
+            env: {
+              CONTAINER_ID: container.id,
+              HOST: container.host,
+              PORT: 80
+            },
+            ports: ports,
+            volumes: opts.volumes || {}
+          }
 
-        if (persist) dopts.volumes['/tmp/'+id] = '/root'
-        if (opts.trusted) dopts.volumes['/var/run/docker.sock'] = '/var/run/docker.sock'
+          if (persist) dopts.volumes['/tmp/'+id] = '/root'
+          if (opts.trusted) dopts.volumes['/var/run/docker.sock'] = '/var/run/docker.sock'
 
-        pump(stream, docker(image, dopts), stream, function(err) {
-          server.emit('kill', container)
-          delete containers[id]
+          pump(stream, docker(image, dopts), stream, function(err) {
+            if (proxy) proxy.close()
+            server.emit('kill', container)
+            delete containers[id]
+          })
         })
       })
     })
@@ -109,6 +129,14 @@ module.exports = function(image, opts) {
     var container = containers.hasOwnProperty(id) && containers[id]
     if (!container) return res.error(404, 'Could not find container')
     pump(req, request('http://'+DOCKER_HOST+':'+container.ports.fs+url), res)
+  })
+
+  server.all(function(req, res, next) {
+    if (!opts.offline) return next()
+    var id = req.connection.address().address
+    var container = containers.hasOwnProperty(id) && containers[id]
+    if (container) return pump(req, request('http://'+DOCKER_HOST+':'+container.ports.http+req.url), res)
+    next()
   })
 
   server.get('/bundle.js', '/-/bundle.js')
