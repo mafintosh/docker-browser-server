@@ -16,6 +16,7 @@ if (argv.help || !image) {
   console.log('  --port,    -p  [8080]          (port to listen on)')
   console.log('  --docker,  -d  [$DOCKER_HOST]  (optional host of the docker daemon)')
   console.log('  --persist                      (allow persistance of /root in the containers)')
+  console.log('  --dockerport                   (expose a docker container port to dockerhost)')
   console.log('')
   return process.exit(argv.help ? 0 : 1)
 }
@@ -35,3 +36,4 @@ server.on('listening', function() {
 })
 
 server.listen(argv.port)
+

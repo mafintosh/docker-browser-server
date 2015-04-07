@@ -46,44 +46,51 @@ module.exports = function(image, opts) {
 
     freeport(function(err, filesPort) {
       if (err) return connection.destroy()
-      freeport(function(err, httpPort) {
+      freeport(function(err, dockerHostPort) {
         if (err) return connection.destroy()
-        startProxy(httpPort, function(err, subdomain, proxy) {
-          if (err) return connection.destroy()
+        freeport(function(err, httpPort) {
+            if (err) return connection.destroy()
+            startProxy(httpPort, function(err, subdomain, proxy) {
+              if (err) return connection.destroy()
 
-          var container = containers[id] = {
-            id: id,
-            host: 'http://'+subdomain,
-            ports: {http:httpPort, fs:filesPort}
-          }
+              var container = containers[id] = {
+                id: id,
+                host: 'http://'+subdomain,
+                ports: {http:httpPort, fs:filesPort, docker:dockerHostPort}
+              }
 
-          server.emit('spawn', container)
+              server.emit('spawn', container)
 
-          var ports = {}
+              var ports = {}
+              var dockercontainerport = opts.dockerport || 9000
+              ports[httpPort] = 80
+              ports[filesPort] = 8441
+              ports[dockerHostPort] = dockercontainerport
+              
+              var envs = {}
+              envs['CONTAINER_ID'] = container.id
+              envs['HOST'] = container.host
+              envs['PORT_80'] = httpPort
+              envs['PORT_8441'] = filesPort
+              envs['PORT_' + dockercontainerport] = dockerHostPort
+              
+              var dopts = {
+                tty: opts.tty === undefined ? true : opts.tty,
+                env: envs,
+                ports: ports,
+                volumes: opts.volumes || {}
+              }
 
-          ports[httpPort] = 80
-          ports[filesPort] = 8441
+              if (persist) dopts.volumes['/tmp/'+id] = '/root'
+              if (opts.trusted) dopts.volumes['/var/run/docker.sock'] = '/var/run/docker.sock'
 
-          var dopts = {
-            tty: opts.tty === undefined ? true : opts.tty,
-            env: {
-              CONTAINER_ID: container.id,
-              HOST: container.host,
-              PORT: 80
-            },
-            ports: ports,
-            volumes: opts.volumes || {}
-          }
-
-          if (persist) dopts.volumes['/tmp/'+id] = '/root'
-          if (opts.trusted) dopts.volumes['/var/run/docker.sock'] = '/var/run/docker.sock'
-
-          pump(stream, docker(image, dopts), stream, function(err) {
-            if (proxy) proxy.close()
-            server.emit('kill', container)
-            delete containers[id]
+              pump(stream, docker(image, dopts), stream, function(err) {
+                if (proxy) proxy.close()
+                server.emit('kill', container)
+                delete containers[id]
+              })
+            })
           })
-        })
       })
     })
   })
