@@ -73,7 +73,12 @@ module.exports = function(image, opts) {
               envs['PORT_80'] = httpPort
               envs['PORT_8441'] = filesPort
               envs['PORT_' + dockercontainerport] = dockerHostPort
-              
+              if (opts.envs) {
+                Object.keys(opts.envs).forEach(function(name) {
+                  envs[name] = opts.envs[name]
+                })
+              }
+
               var dopts = {
                 tty: opts.tty === undefined ? true : opts.tty,
                 env: envs,
