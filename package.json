@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "cors": "^2.4.2",
+    "debug-stream": "^3.0.1",
     "docker-browser-console": "^5.0.0",
     "freeport": "^1.0.3",
     "minimist": "^1.1.0",
@@ -12,8 +13,8 @@
     "request": "^2.45.0",
     "root": "^2.0.0",
     "send": "^0.10.1",
-    "websocket-stream": "^1.0.2",
-    "ws": "^0.4.32"
+    "websocket-stream": "^5.0.1",
+    "ws": "^3.1.0"
   },
   "devDependencies": {},
   "bin": {

@@ -12,6 +12,7 @@ var path = require('path')
 var pump = require('pump')
 var cors = require('cors')
 var net = require('net')
+var debugStream = require('debug-stream')('docker-browser-server')
 
 module.exports = function(image, opts) {
   if (!opts) opts = {}
@@ -22,8 +23,7 @@ module.exports = function(image, opts) {
   var wss = new WebSocketServer({server:server})
   var containers = {}
 
-  wss.on('connection', function(connection) {
-    var req = connection.upgradeReq
+  wss.on('connection', function (connection, req) {
     var url = req.url.slice(1)
     var persist = opts.persist && !!url
     var id = url || Math.random().toString(36).slice(2)
@@ -89,7 +89,7 @@ module.exports = function(image, opts) {
               if (persist) dopts.volumes['/tmp/'+id] = '/root'
               if (opts.trusted) dopts.volumes['/var/run/docker.sock'] = '/var/run/docker.sock'
 
-              pump(stream, docker(image, dopts), stream, function(err) {
+              pump(stream, docker(image, dopts), debugStream(), stream, function(err) {
                 if (proxy) proxy.close()
                 server.emit('kill', container)
                 delete containers[id]
