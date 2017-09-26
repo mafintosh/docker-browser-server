@@ -1,12 +1,12 @@
 {
   "name": "docker-browser-server",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Spawn and expose docker containers over http and websockets",
   "main": "index.js",
   "dependencies": {
     "cors": "^2.4.2",
     "debug-stream": "^3.0.1",
-    "docker-browser-console": "^5.0.0",
+    "docker-browser-console": "^6.0.0",
     "freeport": "^1.0.3",
     "minimist": "^1.1.0",
     "pump": "^1.0.0",
