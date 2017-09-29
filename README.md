@@ -18,6 +18,8 @@ Running the above will start the server on port 8080
 
 Visit http://localhost:8080 after to attach to a container using a web browser.
 
+You can also pass `--hostNetworking` to run the containers in `host` network mode, meaning the network is not virtualized (may be necessary for p2p connections to work)
+
 ## Spawn a new container
 
 To spawn a new container create a websocket to the server and pipe it to a [docker-browser-console](https://github.com/mafintosh/docker-browser-console) instance
