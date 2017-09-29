@@ -24,6 +24,7 @@ module.exports = function(image, opts) {
   var containers = {}
 
   wss.on('connection', function (connection, req) {
+    console.log('socket start', +new Date())
     var url = req.url.slice(1)
     var persist = opts.persist && !!url
     var id = url || Math.random().toString(36).slice(2)
@@ -66,7 +67,7 @@ module.exports = function(image, opts) {
               ports[httpPort] = 80
               ports[filesPort] = 8441
               ports[dockerHostPort] = dockercontainerport
-              
+
               var envs = {}
               envs['CONTAINER_ID'] = container.id
               envs['HOST'] = container.host
@@ -83,12 +84,16 @@ module.exports = function(image, opts) {
                 tty: opts.tty === undefined ? true : opts.tty,
                 env: envs,
                 ports: ports,
-                volumes: opts.volumes || {}
+                volumes: opts.volumes || {},
+                beforeCreate: opts.beforeCreate
               }
 
               if (persist) dopts.volumes['/tmp/'+id] = '/root'
               if (opts.trusted) dopts.volumes['/var/run/docker.sock'] = '/var/run/docker.sock'
 
+              stream.on('close', function () {
+                console.log('socket close', +new Date())
+              })
               pump(stream, docker(image, dopts), debugStream(), stream, function(err) {
                 if (proxy) proxy.close()
                 server.emit('kill', container)

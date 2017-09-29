@@ -5,6 +5,7 @@ var docker = require('./')
 
 var argv = minimist(process.argv, {
   alias: {port:'p', docker:'d', help:'h'},
+  boolean: 'hostNetworking',
   default: {port:process.env.PORT || 8080}
 })
 
@@ -19,6 +20,10 @@ if (argv.help || !image) {
   console.log('  --dockerport                   (expose a docker container port to dockerhost)')
   console.log('')
   return process.exit(argv.help ? 0 : 1)
+}
+
+if (argv.hostNetworking) argv.beforeCreate = function (config) {
+  config.HostConfig.NetworkMode = 'host'
 }
 
 var server = docker(image, argv)
