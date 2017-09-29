@@ -1,6 +1,6 @@
 {
   "name": "docker-browser-server",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Spawn and expose docker containers over http and websockets",
   "main": "index.js",
   "dependencies": {
