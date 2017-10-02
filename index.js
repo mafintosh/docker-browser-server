@@ -12,7 +12,8 @@ var path = require('path')
 var pump = require('pump')
 var cors = require('cors')
 var net = require('net')
-var debugStream = require('debug-stream')('docker-browser-server')
+var debug = require('debug')('docker-browser-server')
+var debugStream = require('debug-stream')('docker-browser-server-stream')
 
 module.exports = function(image, opts) {
   if (!opts) opts = {}
@@ -43,7 +44,6 @@ module.exports = function(image, opts) {
         cb(null, req.headers.host.split(':')[0]+':'+port, proxy)
       })
     }
-
 
     freeport(function(err, filesPort) {
       if (err) return connection.destroy()
