@@ -20,15 +20,15 @@ module.exports = function(image, opts) {
   var DOCKER_HOST = opts.docker || (process.env.DOCKER_HOST || '127.0.0.1').replace(/^.+:\/\//, '').replace(/:\d+$/, '').replace(/^\/.+$/, '127.0.0.1')
 
   var server = root()
-  var wss = new WebSocketServer({server:server})
+  var wss = new WebSocketServer({server: server})
   var containers = {}
 
   wss.on('connection', function (connection, req) {
-    console.log('socket start', +new Date())
     var url = req.url.slice(1)
     var persist = opts.persist && !!url
     var id = url || Math.random().toString(36).slice(2)
     var stream = websocket(connection)
+    debug('socket start', id, +new Date())
 
     var startProxy = function(httpPort, cb) {
       if (!opts.offline) return cb(null, id+'.c.'+req.headers.host)
@@ -56,8 +56,8 @@ module.exports = function(image, opts) {
 
               var container = containers[id] = {
                 id: id,
-                host: 'http://'+subdomain,
-                ports: {http:httpPort, fs:filesPort, docker:dockerHostPort}
+                host: 'https://' + subdomain,
+                ports: {http: httpPort, fs: filesPort, docker: dockerHostPort}
               }
 
               server.emit('spawn', container)
@@ -92,8 +92,9 @@ module.exports = function(image, opts) {
               if (opts.trusted) dopts.volumes['/var/run/docker.sock'] = '/var/run/docker.sock'
 
               stream.on('close', function () {
-                console.log('socket close', +new Date())
+                debug('socket close', id, +new Date())
               })
+
               pump(stream, docker(image, dopts), debugStream(), stream, function(err) {
                 if (proxy) proxy.close()
                 server.emit('kill', container)

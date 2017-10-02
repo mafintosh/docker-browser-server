@@ -5,7 +5,7 @@ var docker = require('./')
 
 var argv = minimist(process.argv, {
   alias: {port:'p', docker:'d', help:'h'},
-  boolean: 'hostNetworking',
+  boolean: ['hostNetworking', 'offline'],
   default: {port:process.env.PORT || 8080}
 })
 
