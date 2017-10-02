@@ -41,7 +41,9 @@ module.exports = function(image, opts) {
       proxy.once('error', cb)
       proxy.listen(0, function() {
         var port = proxy.address().port
-        cb(null, req.headers.host.split(':')[0]+':'+port, proxy)
+        var subdomain = req.headers.host.split(':')[0]+':'+port
+        debug('started proxy', subdomain)
+        cb(null, subdomain, proxy)
       })
     }
 
@@ -56,7 +58,7 @@ module.exports = function(image, opts) {
 
               var container = containers[id] = {
                 id: id,
-                host: 'https://' + subdomain,
+                host: 'http://' + subdomain,
                 ports: {http: httpPort, fs: filesPort, docker: dockerHostPort}
               }
 
