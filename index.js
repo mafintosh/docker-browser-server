@@ -19,6 +19,7 @@ module.exports = function(image, opts) {
   if (!opts) opts = {}
 
   var DOCKER_HOST = opts.docker || (process.env.DOCKER_HOST || '127.0.0.1').replace(/^.+:\/\//, '').replace(/:\d+$/, '').replace(/^\/.+$/, '127.0.0.1')
+  var TMPDIR = process.env.TMPDIR || '/tmp'
 
   var server = root()
   var wss = new WebSocketServer({server: server})
@@ -89,8 +90,8 @@ module.exports = function(image, opts) {
                 volumes: opts.volumes || {},
                 beforeCreate: opts.beforeCreate
               }
-
-              if (persist) dopts.volumes['/tmp/'+id] = '/root'
+              
+              if (persist) dopts.volumes[TMPDIR + '/'+id] = '/root'
               if (opts.trusted) dopts.volumes['/var/run/docker.sock'] = '/var/run/docker.sock'
 
               stream.on('close', function () {
