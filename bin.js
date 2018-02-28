@@ -18,12 +18,17 @@ if (argv.help || !image) {
   console.log('  --docker,  -d  [$DOCKER_HOST]  (optional host of the docker daemon)')
   console.log('  --persist                      (allow persistance of /root in the containers)')
   console.log('  --dockerport                   (expose a docker container port to dockerhost)')
+  console.log('  --pidslimit N                  (limit spawned containers to N number of processes)')
   console.log('')
   return process.exit(argv.help ? 0 : 1)
 }
 
 if (argv.hostNetworking) argv.beforeCreate = function (config) {
   config.HostConfig.NetworkMode = 'host'
+}
+
+if (argv.pidslimit) argv.beforeCreate = function (config) {
+  config.HostConfig.PidsLimit = argv.pidslimit
 }
 
 var server = docker(image, argv)
